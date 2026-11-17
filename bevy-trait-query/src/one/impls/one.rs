@@ -144,7 +144,7 @@ unsafe impl<Trait: ?Sized + TraitQuery> WorldQuery for One<&Trait> {
     unsafe fn set_archetype<'w>(
         fetch: &mut OneTraitFetch<'w, Trait>,
         state: &Self::State,
-        _archetype: &'w bevy_ecs::archetype::Archetype,
+        archetype: &'w bevy_ecs::archetype::Archetype,
         table: &'w bevy_ecs::storage::Table,
     ) {
         unsafe {
@@ -161,7 +161,9 @@ unsafe impl<Trait: ?Sized + TraitQuery> WorldQuery for One<&Trait> {
                 }
             }
             for (&component, &meta) in zip_exact(&*state.components, &*state.meta) {
-                if let Some(sparse_set) = fetch.sparse_sets.get(component) {
+                if archetype.contains(component)
+                    && let Some(sparse_set) = fetch.sparse_sets.get(component)
+                {
                     fetch.storage = FetchStorage::SparseSet {
                         components: sparse_set,
                         meta,
@@ -379,7 +381,7 @@ unsafe impl<Trait: ?Sized + TraitQuery> WorldQuery for One<&mut Trait> {
     unsafe fn set_archetype<'w>(
         fetch: &mut OneTraitFetch<'w, Trait>,
         state: &Self::State,
-        _archetype: &'w bevy_ecs::archetype::Archetype,
+        archetype: &'w bevy_ecs::archetype::Archetype,
         table: &'w bevy_ecs::storage::Table,
     ) {
         unsafe {
@@ -395,7 +397,9 @@ unsafe impl<Trait: ?Sized + TraitQuery> WorldQuery for One<&mut Trait> {
                 }
             }
             for (&component, &meta) in zip_exact(&*state.components, &*state.meta) {
-                if let Some(sparse_set) = fetch.sparse_sets.get(component) {
+                if archetype.contains(component)
+                    && let Some(sparse_set) = fetch.sparse_sets.get(component)
+                {
                     fetch.storage = FetchStorage::SparseSet {
                         components: sparse_set,
                         meta,

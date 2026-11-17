@@ -108,7 +108,7 @@ unsafe impl<Trait: ?Sized + TraitQuery> WorldQuery for OneChanged<Trait> {
     unsafe fn set_archetype<'w>(
         fetch: &mut Self::Fetch<'w>,
         state: &Self::State,
-        _archetype: &'w Archetype,
+        archetype: &'w Archetype,
         table: &'w Table,
     ) {
         unsafe {
@@ -123,7 +123,9 @@ unsafe impl<Trait: ?Sized + TraitQuery> WorldQuery for OneChanged<Trait> {
                 }
             }
             for &component in &*state.components {
-                if let Some(components) = fetch.sparse_sets.get(component) {
+                if archetype.contains(component)
+                    && let Some(components) = fetch.sparse_sets.get(component)
+                {
                     fetch.storage = ChangeDetectionStorage::SparseSet { components };
                     return;
                 }

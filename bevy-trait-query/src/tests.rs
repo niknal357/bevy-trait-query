@@ -800,3 +800,50 @@ fn transmute_panics_if_trait_touched() {
 
     schedule.run(&mut world);
 }
+
+#[derive(Component)]
+#[component(storage = "SparseSet")]
+pub struct SparseA(u32);
+impl Person for SparseA {
+    fn name(&self) -> &str {
+        "a"
+    }
+    fn age(&self) -> u32 {
+        self.0
+    }
+    fn set_age(&mut self, age: u32) {
+        self.0 = age;
+    }
+}
+
+#[derive(Component)]
+#[component(storage = "SparseSet")]
+pub struct SparseB(u32);
+impl Person for SparseB {
+    fn name(&self) -> &str {
+        "b"
+    }
+    fn age(&self) -> u32 {
+        self.0
+    }
+    fn set_age(&mut self, age: u32) {
+        self.0 = age;
+    }
+}
+
+#[test]
+fn one_with_two_sparse_impls() {
+    let mut world = World::new();
+    world
+        .register_component_as::<dyn Person, SparseA>()
+        .register_component_as::<dyn Person, SparseB>();
+    world.spawn(SparseA(1));
+    world.spawn(SparseB(2));
+    let mut ages: Vec<_> = world
+        .query::<One<&dyn Person>>()
+        .iter(&world)
+        .map(|p| (p.name().to_owned(), p.age()))
+        .collect();
+    ages.sort();
+    assert_eq!(ages, vec![("a".to_owned(), 1), ("b".to_owned(), 2)]);
+}
